@@ -14,10 +14,13 @@ def detail(request, num, num1):
 
 from .models import Students, Grades
 
+from django.db.models import F, Q
+
 
 def grades(request):
     # 去模板里取数据
-    gradesList = Grades.objects.all()
+    # gradesList = Grades.objects.all()
+    gradesList = Grades.objects.filter(gboynum__gt=F('ggirlnum'))
     # 将数据传递给模板，模板再渲染页面，将渲染好的页面返回给浏览器
     return render(request, 'myApp/grades.html', {"grades": gradesList})
 
@@ -50,11 +53,25 @@ def students_page(request, page):
     return render(request, 'myApp/students.html', {"students": studentsList})
 
 
-def students_query(request):
-    # studentsList = Students.stuObj1.filter(sname__contains="太")
-    studentsList = Students.stuObj1.filter(sname__startswith="太")
-    return render(request, 'myApp/students.html', {"students": studentsList})
+from django.db.models import Max
 
+
+def students_query(request):
+    # studentsList = Students.stuObj1.all()
+    # studentsList = Students.stuObj1.filter(sname__contains="羊")
+    # studentsList = Students.stuObj1.filter(sname__endswith="狼")
+    # studentsList = Students.stuObj1.filter(pk__in=[2, 4, 6, 8, 10])
+    # studentsList = Students.stuObj1.filter(sage__gt=20)
+    # studentsList = Students.stuObj1.filter(lastTime__year=2019)
+    # studentsList = Students.stuObj1.filter(sname__contains="%")
+    # 描述中带有喜羊羊这三个字的数据是属于哪个班级的
+    grade = Grades.objects.filter(students__scontend__contains="喜羊羊")
+    print(grade)
+    # studentsList = Students.stuObj1.filter(Q(pk__lte=3) | Q(sage__gt=29))
+    studentsList = Students.stuObj1.filter(~Q(pk__lte=3))
+    maxAge = Students.stuObj1.aggregate(Max("sage"))
+    print(maxAge)
+    return render(request, 'myApp/students.html', {"students": studentsList})
 
 
 def addstudents(request):
